@@ -64,6 +64,7 @@ def train(epoch, model, optimizer, scheduler, scaler, train_loader, cfg, logger,
     if train_loader.sampler is not None and cfg.dist:
         train_loader.sampler.set_epoch(epoch)
 
+    lr=0
     for i, batch in enumerate(train_loader, start=1):
         data_time.update(time.time() - end)
 
