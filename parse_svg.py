@@ -11,6 +11,7 @@ LABEL_NUM = 35
 COMMANDS = ['Line', 'Arc','circle', 'ellipse']
 import mmcv, argparse
 from concurrent.futures import ProcessPoolExecutor
+from tqdm import tqdm
 
 def parse_args():
     '''
@@ -179,8 +180,8 @@ if __name__=="__main__":
     inputs = []
     for svg_path in svg_paths: inputs.append([svg_path, save_dir])
 
-    # Initialize ProgressBar
-    progress_bar = mmcv.ProgressBar(len(inputs))
+    # Initialize tqdm for progress tracking
+    progress_bar = tqdm(total=len(inputs), desc="Processing SVG files", ncols=100)
 
     # Define a function for parallel processing
     def process_with_progress(input_item):
@@ -192,6 +193,8 @@ if __name__=="__main__":
     with ProcessPoolExecutor(max_workers=64) as executor:
         executor.map(process_with_progress, inputs)
 
+    progress_bar.close()  # Close the progress bar after processing is complete
+    
     # mmcv.track_progress(process,inputs,64)
 
 
