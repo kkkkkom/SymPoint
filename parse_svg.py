@@ -10,6 +10,7 @@ import numpy as np
 LABEL_NUM = 35
 COMMANDS = ['Line', 'Arc','circle', 'ellipse']
 import mmcv, argparse
+from concurrent.futures import ProcessPoolExecutor
 
 def parse_args():
     '''
