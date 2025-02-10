@@ -178,7 +178,7 @@ if __name__=="__main__":
     inputs = []
     for svg_path in svg_paths: inputs.append([svg_path, save_dir])
 
-    mmcv.track_parallel_progress(process,inputs,64)
+    mmcv.track_progress(process,inputs,64)
 
 
     
