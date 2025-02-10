@@ -178,7 +178,20 @@ if __name__=="__main__":
     inputs = []
     for svg_path in svg_paths: inputs.append([svg_path, save_dir])
 
-    mmcv.track_progress(process,inputs,64)
+    # Initialize ProgressBar
+    progress_bar = mmcv.ProgressBar(len(inputs))
+
+    # Define a function for parallel processing
+    def process_with_progress(input_item):
+        svg_path, save_dir = input_item
+        process(svg_path, save_dir)
+        progress_bar.update()
+
+    # Use ProcessPoolExecutor for parallel processing
+    with ProcessPoolExecutor(max_workers=64) as executor:
+        executor.map(process_with_progress, inputs)
+
+    # mmcv.track_progress(process,inputs,64)
 
 
     
