@@ -47,8 +47,8 @@ criterion:
 data:
   train:
     type: 'svg'
-#    data_root: 'dataset/train/jsons'
-    data_root: 'dataset/train/train'
+    data_root: 'dataset/train/jsons'
+#    data_root: 'dataset/train/train'
     repeat: 5
     split: "train"
     data_norm: "mean"
