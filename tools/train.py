@@ -185,7 +185,8 @@ def main():
     timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
     log_file = osp.join(cfg.work_dir, f"{timestamp}.log")
     logger = get_root_logger(log_file=log_file)
-
+    print(f"[DEBUG] logger={logger}")
+    
     logger.info(f"Config:\n{cfg_txt}")
     logger.info(f"Distributed: {args.dist}")
     logger.info(f"Mix precision training: {cfg.fp16}")
