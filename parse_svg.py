@@ -191,7 +191,7 @@ if __name__=="__main__":
         progress_bar.update()
 
     # Use ProcessPoolExecutor for parallel processing
-    with ProcessPoolExecutor(max_workers=64) as executor:
+    with ProcessPoolExecutor(max_workers=1) as executor:
         executor.map(process_with_progress, inputs)
 
     progress_bar.close()  # Close the progress bar after processing is complete
