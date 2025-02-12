@@ -74,6 +74,10 @@ def train(epoch, model, optimizer, scheduler, scaler, train_loader, cfg, logger,
 
         if scheduler is None:
             cosine_lr_after_step(optimizer, cfg.optimizer.lr, epoch - 1, cfg.step_epoch, cfg.epochs)
+
+        for k, v in batch.items():
+            logger.info(f"{k}: {v.shape}, min={v.min()}, max={v.max()}")
+
         with torch.cuda.amp.autocast(enabled=cfg.fp16):
             _,loss, log_vars = model(batch)
 

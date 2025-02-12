@@ -209,6 +209,7 @@ class Decoder(nn.Module):
             attn_mask = output_masks.flatten(0,1).transpose(0,1)
             attn_mask = get_subscene_features("up", step, stage_list, attn_mask, torch.tensor([4, 4, 4, 4]))
             attn_mask = attn_mask.transpose(0,1)[:,None,:]
+            print(f"[DEBUG] attn_mask shape: {attn_mask.shape}")
             attn_mask = (attn_mask.sigmoid().repeat(1,self.num_heads,1)<0.5).bool()
             attn_mask = attn_mask.detach()
             return outputs_class, output_masks,attn_mask

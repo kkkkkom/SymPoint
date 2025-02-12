@@ -2,6 +2,7 @@
 
 
 export PYTHONPATH=./
+export CUDA_LAUNCH_BLOCKING=1
 GPUS=1
 
 OMP_NUM_THREADS=$GPUS torchrun --nproc_per_node=$GPUS --master_port=$((RANDOM + 10000)) tools/train.py \
