@@ -67,7 +67,7 @@ def train(epoch, model, optimizer, scheduler, scaler, train_loader, cfg, logger,
         train_loader.sampler.set_epoch(epoch)
 
     sample_count = sum(len(batch[0]) for batch in train_loader)  # Assuming batch[0] is data
-    logger.info("Total sample size:", sample_count)
+    logger.info(f"Total sample size: {sample_count}")
     lr = optimizer.param_groups[0]["lr"] if optimizer.param_groups else 0
     for i, batch in enumerate(train_loader, start=1):
         data_time.update(time.time() - end)
