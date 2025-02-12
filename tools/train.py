@@ -12,6 +12,7 @@ import os.path as osp
 import shutil
 import time
 import logging
+import sys
 
 from svgnet.data import build_dataloader, build_dataset
 from svgnet.model.svgnet import SVGNet as svgnet
