@@ -11,6 +11,7 @@ import os
 import os.path as osp
 import shutil
 import time
+import logging
 
 from svgnet.data import build_dataloader, build_dataset
 from svgnet.model.svgnet import SVGNet as svgnet
@@ -185,6 +186,14 @@ def main():
     timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
     log_file = osp.join(cfg.work_dir, f"{timestamp}.log")
     logger = get_root_logger(log_file=log_file)
+    
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.DEBUG)  # Set the level for console output
+    # Create a formatter and set it for the handler
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    console_handler.setFormatter(formatter)
+    # Add the handler to the logger
+    logger.addHandler(console_handler)
     print(f"[DEBUG] logger={logger}")
     
     logger.info(f"Config:\n{cfg_txt}")
