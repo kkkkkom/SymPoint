@@ -185,8 +185,9 @@ if __name__=="__main__":
 
     # Define a function for parallel processing
     def process_with_progress(input_item):
-        svg_path, save_dir = input_item
-        process(svg_path, save_dir)
+        # svg_path, save_dir = input_item
+        # process(svg_path, save_dir)
+        process(input_item)
         progress_bar.update()
 
     # Use ProcessPoolExecutor for parallel processing
