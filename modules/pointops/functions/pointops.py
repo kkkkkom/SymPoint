@@ -313,16 +313,24 @@ def safe_interpolation(p_from, p_to, x, o_from, o_to, k=3):
     # assert (idx >= 0).all() and (idx < N).all(), f"Invalid indices found: min={idx.min()}, max={idx.max()}, N={N}"
 
     # Compute weights
-    dist = dist.clamp(min=1e-10)  # Avoid division by zero
-    weight = 1.0 / dist
-    weight = weight / weight.sum(-1, keepdim=True)
+    # dist = dist.clamp(min=1e-10)  # Avoid division by zero
+    # weight = 1.0 / dist
+    # weight = weight / weight.sum(-1, keepdim=True)
 
     # Initialize output features
-    new_feat = torch.zeros_like(x[:M])
+    # new_feat = torch.zeros_like(x[:M])
 
     # Perform interpolation
+    # for i in range(k):
+    #     new_feat += x[idx[:, i].long(), :] * weight[:, i].unsqueeze(-1)
+
+    dist_recip = 1.0 / (dist + 1e-8)  # (n, 3)
+    norm = torch.sum(dist_recip, dim=1, keepdim=True)
+    weight = dist_recip / norm  # (n, 3)
+
+    new_feat = torch.cuda.FloatTensor(new_xyz.shape[0], feat.shape[1]).zero_()
     for i in range(k):
-        new_feat += x[idx[:, i].long(), :] * weight[:, i].unsqueeze(-1)
+        new_feat += feat[idx[:, i].long(), :] * weight[:, i].unsqueeze(-1)
 
     return new_feat
 
