@@ -181,7 +181,7 @@ def queryandgroup(nsample, xyz, new_xyz, feat, idx, offset, new_offset, use_xyz=
     # grouped_feat = grouping(feat, idx) # (m, nsample, c)
 
     if use_xyz:
-        return torch.cat((grouped_xyz, grouped_feat), -1),idx.long()  # (m, nsample, 3+c)
+        return torch.cat((grouped_xyz, grouped_feat), -1), idx.long()  # (m, nsample, 3+c)
     else:
         return grouped_feat
 
@@ -267,6 +267,61 @@ def interpolation(xyz, new_xyz, feat, offset, new_offset, k=3):
     new_feat = torch.cuda.FloatTensor(new_xyz.shape[0], feat.shape[1]).zero_()
     for i in range(k):
         new_feat += feat[idx[:, i].long(), :] * weight[:, i].unsqueeze(-1)
+    return new_feat
+
+
+def safe_interpolation(p_from, p_to, x, o_from, o_to, k=3):
+    """
+    Safe wrapper for point interpolation with validation checks
+
+    Args:
+        p_from: source points (N, 3)
+        p_to: target points (M, 3)
+        x: features to interpolate (N, C)
+        o_from: source offsets
+        o_to: target offsets
+        k: number of nearest neighbors
+    """
+    # Ensure contiguous tensors
+    p_from = p_from.contiguous()
+    p_to = p_to.contiguous()
+    x = x.contiguous()
+
+    # Validate shapes
+    N = p_from.shape[0]
+    M = p_to.shape[0]
+
+    assert p_from.shape[1] == 3, f"Expected 3D points, got shape {p_from.shape}"
+    assert p_to.shape[1] == 3, f"Expected 3D points, got shape {p_to.shape}"
+    assert x.shape[0] == N, f"Feature count {x.shape[0]} doesn't match point count {N}"
+
+    # Validate offsets
+    if o_from is not None:
+        assert o_from[-1] == N, f"Source offset {o_from[-1]} doesn't match point count {N}"
+    if o_to is not None:
+        assert o_to[-1] == M, f"Target offset {o_to[-1]} doesn't match point count {M}"
+
+    # Ensure k is not larger than source points
+    k = min(k, N)
+
+    # Find k nearest neighbors and distances
+    idx, dist = pointops.knn_query(k, p_from, p_to, o_from, o_to)
+
+    # Validate indices
+    assert (idx >= 0).all() and (idx < N).all(), f"Invalid indices found: min={idx.min()}, max={idx.max()}, N={N}"
+
+    # Compute weights
+    dist = dist.clamp(min=1e-10)  # Avoid division by zero
+    weight = 1.0 / dist
+    weight = weight / weight.sum(-1, keepdim=True)
+
+    # Initialize output features
+    new_feat = torch.zeros_like(x[:M])
+
+    # Perform interpolation
+    for i in range(k):
+        new_feat += x[idx[:, i].long(), :] * weight[:, i].unsqueeze(-1)
+
     return new_feat
 
 

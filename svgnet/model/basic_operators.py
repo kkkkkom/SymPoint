@@ -6,12 +6,14 @@ from modules.pointops.functions import pointops
 _inf = 1e9
 _eps = 1e-12
 
+
 def get_subscene_label(stage_n, stage_i, stage_list, target, nstride, num_classes, **kwargs):
     # o - num of points in each batch - b batch together - using BxN, used for finding the points in each example
     # calc the reduced size of points for the batch - n = [BxN], with each b clouds, i-th cloud containing N = b[i] points
 
     x = F.one_hot(target, num_classes)  # (n, ncls)
     return get_subscene_features(stage_n, stage_i, stage_list, x, nstride, **kwargs)
+
 
 def get_subscene_features(stage_n, stage_i, stage_list, x, nstride, kr=None, extend=False, return_neighbor=False):
     if stage_i == 0 and not extend:
@@ -24,10 +26,18 @@ def get_subscene_features(stage_n, stage_i, stage_list, x, nstride, kr=None, ext
     if kr is None:  # infer from sub-sampling (nstride) as default
         i = 1 if stage_i == 0 and extend else stage_i
         kr = torch.prod(nstride[:i])
-        
-    new_feat = pointops.interpolation(p_from.contiguous(), p_to.contiguous(), x.contiguous(), o_from, o_to,k=kr)
-    #print(new_feat.shape)
+
+    # new_feat = pointops.interpolation(p_from.contiguous(), p_to.contiguous(), x.contiguous(), o_from, o_to,k=kr)
+    try:
+        new_feat = pointops.safe_interpolation(p_from, p_to, x, o_from, o_to, k=kr)
+    except Exception as e:
+        print(f"Interpolation failed: {str(e)}")
+        print(f"Shapes: p_from={p_from.shape}, p_to={p_to.shape}, x={x.shape}")
+        print(f"Offsets: o_from={o_from}, o_to={o_to}")
+        raise
+    # print(new_feat.shape)
     return new_feat
+
 
 def get_subscene_features2(stage_n, stage_i, stage_list, x, nstride, kr=None, extend=False, return_neighbor=False):
     if stage_i == 0 and not extend:
@@ -55,11 +65,11 @@ def get_subscene_features2(stage_n, stage_i, stage_list, x, nstride, kr=None, ex
     # x = torch.cat([x, torch.zeros([1, self.config.num_classes])])
 
     neighbor_idx = neighbor_idx.view(-1).long()
-    x = x[neighbor_idx, :].view(p_to.shape[0], kr, x.shape[1]) # (m, kr, ncls)
-    #x = x.float().mean(-2)  # (m, ncls)
-    #pool = nn.MaxPool1d(kr.item())
+    x = x[neighbor_idx, :].view(p_to.shape[0], kr, x.shape[1])  # (m, kr, ncls)
+    # x = x.float().mean(-2)  # (m, ncls)
+    # pool = nn.MaxPool1d(kr.item())
     pool = nn.AvgPool1d(kr.item())
-    x = pool(x.transpose(1,2)).squeeze(-1)
+    x = pool(x.transpose(1, 2)).squeeze(-1)
 
     # x = x.float().sum(-2)  # (m, ncls)
     # cnt = (neighbor_idx < p.shape[0]).float().sum(-1, keepdim=True)  # (m, 1)
@@ -67,6 +77,7 @@ def get_subscene_features2(stage_n, stage_i, stage_list, x, nstride, kr=None, ex
     if return_neighbor:
         return x, neighbor_idx, kr
     return x
+
 
 def batch_stack(features, offset, return_detail=False):
     shape_tail = features[0].shape[1:]
@@ -77,7 +88,7 @@ def batch_stack(features, offset, return_detail=False):
     batches_feat = []
     for i, pad_n in enumerate(batches_pad):
         zeros = features.new_zeros([pad_n, *shape])
-        batches_feat.append(torch.cat([features[offset[i]: offset[i+1]], zeros], 0))
+        batches_feat.append(torch.cat([features[offset[i]: offset[i + 1]], zeros], 0))
     batches_feat = torch.stack(batches_feat)  # [B, Nmax, d]
 
     if return_detail:
@@ -103,7 +114,8 @@ def get_boundary_mask(labels, neighbor_label=None, neighbor_idx=None, valid_mask
         bound = bound * valid_mask if valid_mask is not None else bound
     else:
         bound = torch.any(neq, dim=-1)
-        bound = torch.logical_and(bound, valid_mask) if valid_mask is not None else bound  # mask out row of invalid center
+        bound = torch.logical_and(bound,
+                                  valid_mask) if valid_mask is not None else bound  # mask out row of invalid center
     # assert len(bound.shape) == len(labels_shape), f'invalid shape - bound {bound.shape}, label {labels_shape}, neighbor label {neighbor_label.shape}, with valid_mask = {valid_mask}'
 
     if get_plain:
