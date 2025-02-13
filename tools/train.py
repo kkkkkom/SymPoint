@@ -75,11 +75,31 @@ def train(epoch, model, optimizer, scheduler, scaler, train_loader, cfg, logger,
         if scheduler is None:
             cosine_lr_after_step(optimizer, cfg.optimizer.lr, epoch - 1, cfg.step_epoch, cfg.epochs)
 
-        for item in batch:
-            for k, v in item.items():
-                logger.info(f"{k}: {v.shape}, min={v.min()}, max={v.max()}")
+        # for item in batch:
+        #     for k, v in item.items():
+        #         logger.info(f"{k}: {v.shape}, min={v.min()}, max={v.max()}")
         # for k, v in batch.items():
         #     logger.info(f"{k}: {v.shape}, min={v.min()}, max={v.max()}")
+                # Debug batch structure
+        if i == 1:  # Only log first batch structure
+            logger.info("Batch structure:")
+            if isinstance(batch, (list, tuple)):
+                logger.info(f"Batch is a {type(batch)} of length {len(batch)}")
+                for idx, item in enumerate(batch):
+                    if isinstance(item, dict):
+                        logger.info(f"Item {idx} is a dict with keys: {item.keys()}")
+                        for k, v in item.items():
+                            if torch.is_tensor(v):
+                                logger.info(f"  {k}: shape={v.shape}, dtype={v.dtype}, device={v.device}")
+                    elif torch.is_tensor(item):
+                        logger.info(f"Item {idx} is a tensor with shape: {item.shape}")
+                    else:
+                        logger.info(f"Item {idx} is of type: {type(item)}")
+            elif isinstance(batch, dict):
+                logger.info("Batch is a dictionary with keys:", batch.keys())
+                for k, v in batch.items():
+                    if torch.is_tensor(v):
+                        logger.info(f"  {k}: shape={v.shape}, dtype={v.dtype}, device={v.device}")
 
         with torch.cuda.amp.autocast(enabled=cfg.fp16):
             _,loss, log_vars = model(batch)
