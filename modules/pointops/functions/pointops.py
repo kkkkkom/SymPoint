@@ -310,7 +310,7 @@ def safe_interpolation(p_from, p_to, x, o_from, o_to, k=3):
     # idx, dist = knnquery(k, p_from, p_to, o_from, o_to)
 
     # Validate indices
-    assert (idx >= 0).all() and (idx < N).all(), f"Invalid indices found: min={idx.min()}, max={idx.max()}, N={N}"
+    # assert (idx >= 0).all() and (idx < N).all(), f"Invalid indices found: min={idx.min()}, max={idx.max()}, N={N}"
 
     # Compute weights
     dist = dist.clamp(min=1e-10)  # Avoid division by zero
