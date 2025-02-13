@@ -304,8 +304,10 @@ def safe_interpolation(p_from, p_to, x, o_from, o_to, k=3):
     # Ensure k is not larger than source points
     k = min(k, N)
 
+    xyz, new_xyz, feat, offset, new_offset = p_from.contiguous(), p_to.contiguous(), x.contiguous(), o_from, o_to
     # Find k nearest neighbors and distances
-    idx, dist = knnquery(k, p_from, p_to, o_from, o_to)
+    idx, dist = knnquery(k, xyz, new_xyz, offset, new_offset)  # (n, 3), (n, 3)
+    # idx, dist = knnquery(k, p_from, p_to, o_from, o_to)
 
     # Validate indices
     assert (idx >= 0).all() and (idx < N).all(), f"Invalid indices found: min={idx.min()}, max={idx.max()}, N={N}"
