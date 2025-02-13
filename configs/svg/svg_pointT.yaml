@@ -2,14 +2,18 @@ model:
   in_channels: 9
   semantic_classes: 35
   #decoder
-  num_decoders: 3
+#  num_decoders: 3
+  num_decoders: 2
   dropout: 0.0
   pre_norm: False
   num_heads: 8
   shared_decoder: True
-  dim_feedforward: 512
-  hidden_dim: 256
-  num_queries: 500
+#  dim_feedforward: 512
+  dim_feedforward: 256
+#  hidden_dim: 256
+  hidden_dim: 128
+#  num_queries: 500
+  num_queries: 250
   gauss_scale: 1.0
   normalize_pos_enc: False
   #dn
@@ -46,6 +50,7 @@ criterion:
   
 data:
   train:
+    num_points: 1024
     type: 'svg'
     data_root: 'dataset/train/jsons'
 #    data_root: 'dataset/train/train'
@@ -76,6 +81,7 @@ data:
         relative_shift: [-0.5,0.5]
 
   test:
+    num_points: 1024
     type: 'svg'
     data_root: 'dataset/test/jsons'
     repeat: 1
