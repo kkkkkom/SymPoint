@@ -85,8 +85,10 @@ data:
 
 dataloader:
   train:
-    batch_size: 2
-    num_workers: 2
+#    batch_size: 2
+    batch_size: 1
+#    num_workers: 2
+    num_workers: 1
   test:
     batch_size: 1
     num_workers: 1
