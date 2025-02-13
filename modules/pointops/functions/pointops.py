@@ -121,7 +121,9 @@ class KNNQuery(Function):
         if new_xyz is None: new_xyz = xyz
         assert xyz.is_contiguous() and new_xyz.is_contiguous()
         m = new_xyz.shape[0]
+        print(f"[DEBUG] m={m}, nsample={nsample}")
         idx = torch.cuda.IntTensor(m, nsample).zero_()
+        print(f"[DEBUG] idx={idx}")
         dist2 = torch.cuda.FloatTensor(m, nsample).zero_()
         pointops_cuda.knnquery_cuda(m, nsample, xyz, new_xyz, offset, new_offset, idx, dist2)
         return idx, torch.sqrt(dist2)
