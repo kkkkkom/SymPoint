@@ -50,7 +50,6 @@ criterion:
   
 data:
   train:
-    num_points: 1024
     type: 'svg'
     data_root: 'dataset/train/jsons'
 #    data_root: 'dataset/train/train'
@@ -81,7 +80,6 @@ data:
         relative_shift: [-0.5,0.5]
 
   test:
-    num_points: 1024
     type: 'svg'
     data_root: 'dataset/test/jsons'
     repeat: 1
